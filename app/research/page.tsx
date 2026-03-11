@@ -6,7 +6,14 @@ import { ArrowRight } from 'lucide-react'
 
 const RESEARCH_PATH = path.join(process.cwd(), 'content/research')
 
-function getAllResearch() {
+interface ResearchMetadata {
+  slug: string
+  title: string
+  summary: string
+  date: string
+}
+
+function getAllResearch(): ResearchMetadata[] {
   if (!fs.existsSync(RESEARCH_PATH)) return []
   const files = fs.readdirSync(RESEARCH_PATH)
   return files
@@ -17,9 +24,9 @@ function getAllResearch() {
       return {
         ...data,
         slug: file.replace('.mdx', ''),
-      }
+      } as ResearchMetadata
     })
-    .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
 export default function ResearchPage() {
@@ -39,7 +46,7 @@ export default function ResearchPage() {
           </h1>
           
           <div className="flex flex-col">
-            {articles.map((article: any) => (
+            {articles.map((article) => (
               <Link 
                 key={article.slug}
                 href={`/research/${article.slug}`}
