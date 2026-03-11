@@ -1,36 +1,16 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
+import { supabase, type ResearchPost } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
-const RESEARCH_PATH = path.join(process.cwd(), 'content/research')
+export const dynamic = 'force-dynamic'
 
-interface ResearchMetadata {
-  slug: string
-  title: string
-  summary: string
-  date: string
-}
+export default async function ResearchPage() {
+  const { data: articles, error } = await supabase
+    .from('research_posts')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-function getAllResearch(): ResearchMetadata[] {
-  if (!fs.existsSync(RESEARCH_PATH)) return []
-  const files = fs.readdirSync(RESEARCH_PATH)
-  return files
-    .filter((file) => file.endsWith('.mdx'))
-    .map((file) => {
-      const source = fs.readFileSync(path.join(RESEARCH_PATH, file), 'utf8')
-      const { data } = matter(source)
-      return {
-        ...data,
-        slug: file.replace('.mdx', ''),
-      } as ResearchMetadata
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-}
-
-export default function ResearchPage() {
-  const articles = getAllResearch()
+  if (error) console.error('Error fetching research:', error)
 
   return (
     <div className="w-full flex flex-col">
@@ -46,26 +26,31 @@ export default function ResearchPage() {
           </h1>
           
           <div className="flex flex-col">
-            {articles.map((article) => (
+            {articles?.map((article: ResearchPost) => (
               <Link 
-                key={article.slug}
+                key={article.id}
                 href={`/research/${article.slug}`}
                 className="group py-12 border-t border-divider first:border-t-0 flex flex-col gap-4"
               >
                 <div className="flex justify-between items-start">
-                  <span className="label">{article.date}</span>
+                  <span className="label">{new Date(article.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   <ArrowRight className="w-6 h-6 text-divider group-hover:text-blue group-hover:translate-x-2 transition-all" />
                 </div>
                 
-                <h3 className="text-4xl md:text-5xl font-black group-hover:text-blue transition-colors">
+                <h3 className="text-4xl md:text-5xl font-black group-hover:text-blue transition-colors uppercase">
                   {article.title}
                 </h3>
                 
-                <p className="max-w-2xl text-xl">
+                <p className="max-w-2xl text-xl text-deepgray">
                   {article.summary}
                 </p>
               </Link>
             ))}
+            {(!articles || articles.length === 0) && (
+              <div className="py-24 border-t border-divider">
+                <span className="label">RESEARCH IN PROGRESS</span>
+              </div>
+            )}
           </div>
         </div>
       </section>

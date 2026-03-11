@@ -1,22 +1,17 @@
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
+import { supabase } from '@/lib/supabase'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { notFound } from 'next/navigation'
 
-const RESEARCH_PATH = path.join(process.cwd(), 'content/research')
-
-function getResearchBySlug(slug: string) {
-  const filePath = path.join(RESEARCH_PATH, `${slug}.mdx`)
-  if (!fs.existsSync(filePath)) return null
-  const source = fs.readFileSync(filePath, 'utf8')
-  const { data, content } = matter(source)
-  return { metadata: data, content }
-}
+export const dynamic = 'force-dynamic'
 
 export default async function ResearchItemPage({ params }: { params: { slug: string } }) {
-  const article = getResearchBySlug(params.slug)
-  if (!article) notFound()
+  const { data: article, error } = await supabase
+    .from('research_posts')
+    .select('*')
+    .eq('slug', params.slug)
+    .single()
+
+  if (error || !article) notFound()
 
   return (
     <div className="w-full flex flex-col">
@@ -26,8 +21,8 @@ export default async function ResearchItemPage({ params }: { params: { slug: str
         </div>
         
         <div className="col-span-9 p-12 md:p-24">
-          <span className="label mb-8 block">{article.metadata.date as string}</span>
-          <h1 className="section-headline mb-16">{article.metadata.title as string}</h1>
+          <span className="label mb-8 block">{new Date(article.created_at).toLocaleDateString()}</span>
+          <h1 className="section-headline mb-16 uppercase">{article.title}</h1>
           
           <div className="prose max-w-3xl prose-xl prose-jet">
             <MDXRemote source={article.content} />

@@ -1,10 +1,17 @@
-import { getAllProjects } from '@/lib/mdx'
+import { supabase, type Product } from '@/lib/supabase'
 import Link from 'next/link'
 import { Github, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 
-export default function ProjectsPage() {
-  const projects = getAllProjects()
+export const dynamic = 'force-dynamic'
+
+export default async function ProjectsPage() {
+  const { data: projects, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) console.error('Error fetching projects:', error)
 
   return (
     <div className="w-full flex flex-col">
@@ -20,41 +27,50 @@ export default function ProjectsPage() {
           </h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 bg-divider">
-            {projects.map((project) => (
+            {projects?.map((project: Product) => (
               <Link 
-                key={project.slug} 
+                key={project.id} 
                 href={`/projects/${project.slug}`}
-                className="group bg-background p-1 hover:bg-white transition-colors duration-300"
+                className="group bg-background p-1 hover:bg-white transition-colors duration-300 flex flex-col h-full"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-[#C7C7C7]">
-                  {project.image && (
+                  {project.thumbnail ? (
                     <Image 
-                      src={project.image} 
+                      src={project.thumbnail} 
                       alt={project.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-divider font-black text-4xl">
+                      {project.title.charAt(0)}
+                    </div>
                   )}
                 </div>
                 
-                <div className="p-6 flex flex-col gap-4">
+                <div className="p-6 flex flex-col gap-4 flex-grow">
                   <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-black group-hover:text-blue transition-colors">
+                    <h3 className="text-2xl font-black group-hover:text-blue transition-colors uppercase">
                       {project.title}
                     </h3>
                     <Github className="w-5 h-5 text-mutedlabel group-hover:text-jet transition-colors" />
                   </div>
                   
-                  <p className="text-sm line-clamp-2">
+                  <p className="text-sm line-clamp-2 text-deepgray">
                     {project.description}
                   </p>
                   
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#1351AA]">
-                    VIEW PRODUCT <ArrowRight className="w-4 h-4" />
+                  <div className="mt-auto pt-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue">
+                    VIEW PRODUCT <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>
               </Link>
             ))}
+            {(!projects || projects.length === 0) && (
+              <div className="col-span-full bg-background p-24 text-center border-t border-divider">
+                <span className="label">COMMENCING BUILDS SOON</span>
+              </div>
+            )}
           </div>
         </div>
       </section>
