@@ -54,7 +54,7 @@ const config: Config = {
         full: '0',
       },
       fontFamily: {
-        sans: ['General Sans', 'Aileron', 'sans-serif'],
+        sans: ['Inter', 'General Sans', 'Aileron', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       keyframes: {

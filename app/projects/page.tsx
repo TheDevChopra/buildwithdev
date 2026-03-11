@@ -8,7 +8,6 @@ export const dynamic = 'force-dynamic'
 export default async function ProjectsPage() {
   let projects: Product[] = []
   
-  // Guard against missing Supabase credentials during build/initial setup
   const supabase = getSupabase()
   if (supabase) {
     try {
@@ -27,25 +26,25 @@ export default async function ProjectsPage() {
 
   return (
     <div className="w-full flex flex-col">
-      <section className="grid-layout border-b border-divider">
-        <div className="col-span-3 border-r border-divider p-12">
+      <section className="grid grid-cols-1 md:grid-cols-12 border-b border-divider">
+        <div className="md:col-span-3 border-b md:border-b-0 md:border-r border-divider p-6 md:p-12">
           <span className="label">PROJECTS</span>
         </div>
         
-        <div className="col-span-9 p-12 md:p-24">
-          <h1 className="section-headline mb-16">
+        <div className="md:col-span-9 p-8 md:p-16 lg:p-24">
+          <h1 className="section-headline mb-12 md:mb-16">
             BUILD<br />
             LAB
           </h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 bg-divider">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {projects.map((project) => (
               <Link 
                 key={project.id} 
                 href={`/projects/${project.slug}`}
-                className="group bg-background p-1 hover:bg-white transition-colors duration-300 flex flex-col h-full"
+                className="group bg-white border border-divider hover:border-blue transition-all duration-300 flex flex-col h-full overflow-hidden"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-[#C7C7C7]">
+                <div className="relative aspect-[4/3] overflow-hidden bg-[#C7C7C7] border-b border-divider">
                   {project.thumbnail ? (
                     <Image 
                       src={project.thumbnail} 
@@ -54,36 +53,38 @@ export default async function ProjectsPage() {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-divider font-black text-4xl">
+                    <div className="absolute inset-0 flex items-center justify-center text-divider font-black text-6xl">
                       {project.title.charAt(0)}
                     </div>
                   )}
                 </div>
                 
-                <div className="p-6 flex flex-col gap-4 flex-grow">
+                <div className="p-6 md:p-8 flex flex-col gap-4 flex-grow">
                   <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-black group-hover:text-blue transition-colors uppercase">
+                    <h3 className="text-2xl font-black group-hover:text-blue transition-colors uppercase tracking-tight">
                       {project.title}
                     </h3>
                     <Github className="w-5 h-5 text-mutedlabel group-hover:text-jet transition-colors" />
                   </div>
                   
-                  <p className="text-sm line-clamp-2 text-deepgray">
+                  <p className="text-sm line-clamp-2 text-deepgray leading-relaxed">
                     {project.description}
                   </p>
                   
-                  <div className="mt-auto pt-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue">
-                    VIEW PRODUCT <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  <div className="mt-auto pt-6 border-t border-divider flex items-center justify-between text-xs font-black uppercase tracking-widest text-blue">
+                    <span>VIEW PRODUCT</span>
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
                   </div>
                 </div>
               </Link>
             ))}
+            
             {projects.length === 0 && (
-              <div className="col-span-full bg-background py-32 text-center border-t border-divider">
-                <h3 className="text-3xl font-black uppercase mb-4">No products yet.</h3>
-                <p className="label mb-8">Add your first product from the admin panel.</p>
-                <Link href="/admin" className="text-xs font-bold uppercase tracking-widest text-blue hover:underline">
-                  Go to /admin to create one
+              <div className="col-span-full py-24 md:py-32 text-center border border-dashed border-divider bg-white/50">
+                <h3 className="text-2xl md:text-3xl font-black uppercase mb-4">No products yet.</h3>
+                <p className="label mb-8 px-6">Add your first product from the admin panel to populate this laboratory.</p>
+                <Link href="/admin" className="btn-primary inline-flex">
+                  GO TO ADMIN
                 </Link>
               </div>
             )}

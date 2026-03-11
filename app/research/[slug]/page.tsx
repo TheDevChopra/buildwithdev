@@ -1,13 +1,13 @@
 import { getSupabase } from '@/lib/supabase'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { notFound } from 'next/navigation'
+import ProjectLayout, { ProjectSection } from '@/components/product/project-layout'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ResearchItemPage({ params }: { params: { slug: string } }) {
   let article = null
 
-  // Guard against missing Supabase credentials
   const supabase = getSupabase()
   if (supabase) {
     try {
@@ -28,21 +28,20 @@ export default async function ResearchItemPage({ params }: { params: { slug: str
   if (!article) notFound()
 
   return (
-    <div className="w-full flex flex-col">
-      <section className="grid-layout border-b border-divider">
-        <div className="col-span-3 border-r border-divider p-12">
-          <span className="label">RESEARCH</span>
+    <ProjectLayout 
+      label="RESEARCH POST"
+      title={article.title} 
+      description={article.summary}
+    >
+      <ProjectSection title="Content">
+        <div className="prose prose-lg md:prose-xl prose-jet max-w-none">
+          <MDXRemote source={article.content} />
         </div>
-        
-        <div className="col-span-9 p-12 md:p-24">
-          <span className="label mb-8 block">{new Date(article.created_at).toLocaleDateString()}</span>
-          <h1 className="section-headline mb-16 uppercase">{article.title}</h1>
-          
-          <div className="prose max-w-3xl prose-xl prose-jet">
-            <MDXRemote source={article.content} />
-          </div>
-        </div>
-      </section>
-    </div>
+      </ProjectSection>
+      
+      <div className="pt-12 border-t border-divider">
+        <span className="label">PUBLISHED: {new Date(article.created_at).toLocaleDateString()}</span>
+      </div>
+    </ProjectLayout>
   )
 }

@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/navbar";
 
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: "BUILDWITHDEV",
-  description: "Product Lab + Blog by Dev Chopra. Building internet products publicly.",
+  title: "BUILDWITHDEV | Product Lab + Theory",
+  description: "A digital space for engineering products and researching AI product discovery systems.",
 };
 
 export default function RootLayout({
@@ -13,10 +19,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-[#E3E2DE]">
-      <body className="antialiased min-h-screen flex flex-col font-sans text-[#141414]">
+    <html lang="en">
+      <body className={`${inter.className} bg-background text-jet antialiased selection:bg-blue selection:text-cream`}>
         <Navbar />
-        <main className="flex-grow">
+        <main className="min-h-screen">
           {children}
         </main>
       </body>
