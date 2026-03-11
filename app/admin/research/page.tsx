@@ -1,8 +1,11 @@
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, Edit2, Trash2 } from 'lucide-react'
 
 export default async function AdminResearchPage() {
+  const supabase = getSupabase()
+  if (!supabase) return <div>Database configuration missing.</div>
+
   const { data: posts, error } = await supabase
     .from('research_posts')
     .select('*')

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export default function ProductCounter() {
   const [count, setCount] = useState(0)
@@ -9,10 +9,8 @@ export default function ProductCounter() {
 
   useEffect(() => {
     async function fetchCount() {
-      // Guard against missing Supabase credentials
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        return
-      }
+      const supabase = getSupabase()
+      if (!supabase) return
 
       const { count: supabaseCount, error } = await supabase
         .from('products')

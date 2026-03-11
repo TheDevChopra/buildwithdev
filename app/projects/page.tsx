@@ -1,4 +1,4 @@
-import { supabase, type Product } from '@/lib/supabase'
+import { getSupabase, type Product } from '@/lib/supabase'
 import Link from 'next/link'
 import { Github, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
@@ -9,14 +9,19 @@ export default async function ProjectsPage() {
   let projects: Product[] = []
   
   // Guard against missing Supabase credentials during build/initial setup
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (!error && data) {
-      projects = data
+  const supabase = getSupabase()
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (!error && data) {
+        projects = data
+      }
+    } catch (e) {
+      console.error('Build-time fetch skipped:', e)
     }
   }
 

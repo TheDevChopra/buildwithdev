@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import { Github, Play } from 'lucide-react'
 import Link from 'next/link'
@@ -23,15 +23,20 @@ export default async function ProjectItemPage({ params }: { params: { slug: stri
   let project = null
 
   // Guard against missing Supabase credentials
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('slug', params.slug)
-      .single()
-    
-    if (!error && data) {
-      project = data
+  const supabase = getSupabase()
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('slug', params.slug)
+        .single()
+      
+      if (!error && data) {
+        project = data
+      }
+    } catch (e) {
+      console.error('Build-time fetch skipped or failed:', e)
     }
   }
 

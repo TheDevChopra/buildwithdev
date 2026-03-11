@@ -1,4 +1,4 @@
-import { supabase, type ResearchPost } from '@/lib/supabase'
+import { getSupabase, type ResearchPost } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
@@ -8,14 +8,19 @@ export default async function ResearchPage() {
   let articles: ResearchPost[] = []
 
   // Guard against missing Supabase credentials
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const { data, error } = await supabase
-      .from('research_posts')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const supabase = getSupabase()
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('research_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-    if (!error && data) {
-      articles = data
+      if (!error && data) {
+        articles = data
+      }
+    } catch (e) {
+      console.error('Build-time fetch skipped:', e)
     }
   }
 

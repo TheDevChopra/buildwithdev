@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export default function NewResearchPage() {
   const [loading, setLoading] = useState(false)
@@ -23,6 +23,13 @@ export default function NewResearchPage() {
       slug,
       summary: formData.get('summary'),
       content: formData.get('content'),
+    }
+
+    const supabase = getSupabase()
+    if (!supabase) {
+      setError('Database configuration missing')
+      setLoading(false)
+      return
     }
 
     const { error: supabaseError } = await supabase

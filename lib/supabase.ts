@@ -1,14 +1,27 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Initialize with dummy values if missing to avoid build crashes, 
-// but we'll check for these in the pages
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co', 
-  supabaseAnonKey || 'placeholder'
-)
+let supabaseInstance: SupabaseClient | null = null
+
+export const getSupabase = () => {
+  if (supabaseInstance) return supabaseInstance
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // Return null if credentials are missing
+    // This allows the build to bypass createClient entirely
+    return null
+  }
+
+  try {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
+    return supabaseInstance
+  } catch (e) {
+    console.error('Failed to initialize Supabase client:', e)
+    return null
+  }
+}
 
 export type Product = {
   id: string

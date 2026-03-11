@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export default function NewProductPage() {
   const [loading, setLoading] = useState(false)
@@ -28,6 +28,13 @@ export default function NewProductPage() {
       prompts: formData.get('prompts'),
       architecture: formData.get('architecture'),
       thumbnail: formData.get('thumbnail'),
+    }
+
+    const supabase = getSupabase()
+    if (!supabase) {
+      setError('Database configuration missing')
+      setLoading(false)
+      return
     }
 
     const { error: supabaseError } = await supabase
