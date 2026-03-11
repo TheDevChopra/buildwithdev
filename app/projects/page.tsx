@@ -67,8 +67,12 @@ export default async function ProjectsPage() {
               </Link>
             ))}
             {(!projects || projects.length === 0) && (
-              <div className="col-span-full bg-background p-24 text-center border-t border-divider">
-                <span className="label">COMMENCING BUILDS SOON</span>
+              <div className="col-span-full bg-background py-32 text-center border-t border-divider">
+                <h3 className="text-3xl font-black uppercase mb-4">No products yet.</h3>
+                <p className="label mb-8">Add your first product from the admin panel.</p>
+                <Link href="/admin" className="text-xs font-bold uppercase tracking-widest text-blue hover:underline">
+                  Go to /admin to create one
+                </Link>
               </div>
             )}
           </div>

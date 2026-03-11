@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, ShoppingBag, BookOpen, LogOut } from 'lucide-react'
+import { ShoppingBag, BookOpen, LogOut } from 'lucide-react'
 
 export default function AdminSidebar() {
   return (

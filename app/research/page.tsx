@@ -47,8 +47,9 @@ export default async function ResearchPage() {
               </Link>
             ))}
             {(!articles || articles.length === 0) && (
-              <div className="py-24 border-t border-divider">
-                <span className="label">RESEARCH IN PROGRESS</span>
+              <div className="py-24 border-t border-divider text-left">
+                <h3 className="text-3xl font-black uppercase mb-4">Research in progress.</h3>
+                <p className="label">No posts published yet. Use the admin panel to add research.</p>
               </div>
             )}
           </div>
