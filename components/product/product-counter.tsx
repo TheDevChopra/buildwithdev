@@ -9,6 +9,11 @@ export default function ProductCounter() {
 
   useEffect(() => {
     async function fetchCount() {
+      // Guard against missing Supabase credentials
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return
+      }
+
       const { count: supabaseCount, error } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })

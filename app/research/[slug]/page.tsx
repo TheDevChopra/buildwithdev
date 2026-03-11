@@ -5,13 +5,22 @@ import { notFound } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 export default async function ResearchItemPage({ params }: { params: { slug: string } }) {
-  const { data: article, error } = await supabase
-    .from('research_posts')
-    .select('*')
-    .eq('slug', params.slug)
-    .single()
+  let article = null
 
-  if (error || !article) notFound()
+  // Guard against missing Supabase credentials
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    const { data, error } = await supabase
+      .from('research_posts')
+      .select('*')
+      .eq('slug', params.slug)
+      .single()
+    
+    if (!error && data) {
+      article = data
+    }
+  }
+
+  if (!article) notFound()
 
   return (
     <div className="w-full flex flex-col">

@@ -6,12 +6,19 @@ import Image from 'next/image'
 export const dynamic = 'force-dynamic'
 
 export default async function ProjectsPage() {
-  const { data: projects, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) console.error('Error fetching projects:', error)
+  let projects: Product[] = []
+  
+  // Guard against missing Supabase credentials during build/initial setup
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (!error && data) {
+      projects = data
+    }
+  }
 
   return (
     <div className="w-full flex flex-col">
@@ -27,7 +34,7 @@ export default async function ProjectsPage() {
           </h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 bg-divider">
-            {projects?.map((project: Product) => (
+            {projects.map((project) => (
               <Link 
                 key={project.id} 
                 href={`/projects/${project.slug}`}
@@ -66,7 +73,7 @@ export default async function ProjectsPage() {
                 </div>
               </Link>
             ))}
-            {(!projects || projects.length === 0) && (
+            {projects.length === 0 && (
               <div className="col-span-full bg-background py-32 text-center border-t border-divider">
                 <h3 className="text-3xl font-black uppercase mb-4">No products yet.</h3>
                 <p className="label mb-8">Add your first product from the admin panel.</p>

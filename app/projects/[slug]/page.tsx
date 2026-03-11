@@ -20,13 +20,22 @@ function getEmbedUrl(url: string) {
 }
 
 export default async function ProjectItemPage({ params }: { params: { slug: string } }) {
-  const { data: project, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', params.slug)
-    .single()
+  let project = null
 
-  if (error || !project) notFound()
+  // Guard against missing Supabase credentials
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('slug', params.slug)
+      .single()
+    
+    if (!error && data) {
+      project = data
+    }
+  }
+
+  if (!project) notFound()
 
   const embedUrl = getEmbedUrl(project.video_url)
 
