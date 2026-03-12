@@ -19,7 +19,26 @@ export default function ProductCounter() {
         setCount(supabaseCount)
       }
     }
+    
     fetchCount()
+
+    const supabase = getSupabase()
+    if (!supabase) return
+
+    const channel = supabase
+      .channel('counter-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          fetchCount()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const targetCount = 30

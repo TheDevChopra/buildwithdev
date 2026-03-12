@@ -45,7 +45,7 @@ export default async function ProjectItemPage({ params }: { params: { slug: stri
   const embedUrl = getEmbedUrl(project.video_url)
 
   const VideoSlot = (
-    <div className="w-full h-full bg-jet flex flex-col items-center justify-center text-cream">
+    <div className="w-full h-full bg-white flex flex-col items-center justify-center text-[#7A7A7A]">
       {embedUrl ? (
         <iframe 
           src={embedUrl}
@@ -55,8 +55,9 @@ export default async function ProjectItemPage({ params }: { params: { slug: stri
         />
       ) : (
         <div className="flex flex-col items-center gap-4">
-          <Play className="w-12 h-12" />
-          <span className="label text-cream">NO DEMO AVAILABLE</span>
+          <div className="aspect-video w-full flex items-center justify-center border border-[#C7C7C7] text-sm text-[#7A7A7A]">
+            Demo coming soon
+          </div>
         </div>
       )}
     </div>
@@ -69,15 +70,21 @@ export default async function ProjectItemPage({ params }: { params: { slug: stri
       videoSlot={VideoSlot}
     >
       <div className="space-y-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <ProjectSection title="Tech Stack">
-            {project.tech_stack || 'React, Next.js, Tailwind, Supabase.'}
-          </ProjectSection>
-          
-          <ProjectSection title="Architecture">
-            {project.architecture || 'Scalable full-stack application with modular UI and secure backend integration.'}
-          </ProjectSection>
-        </div>
+        {(project.tech_stack || project.architecture) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {project.tech_stack && (
+              <ProjectSection title="Tech Stack">
+                {project.tech_stack}
+              </ProjectSection>
+            )}
+            
+            {project.architecture && (
+              <ProjectSection title="Architecture">
+                {project.architecture}
+              </ProjectSection>
+            )}
+          </div>
+        )}
 
         {project.prompts && (
           <ProjectSection title="Prompts">
