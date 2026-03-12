@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase'
-import { Video, Link as LinkIcon, Info } from 'lucide-react'
+import { Video, Link as LinkIcon, AlertCircle } from 'lucide-react'
 
 export default function NewProductPage() {
   const [loading, setLoading] = useState(false)
@@ -31,23 +31,29 @@ export default function NewProductPage() {
       thumbnail: formData.get('thumbnail'),
     }
 
-    const supabase = getSupabase()
-    if (!supabase) {
-      setError('Database configuration missing')
-      setLoading(false)
-      return
-    }
+    try {
+      const supabase = getSupabase()
+      if (!supabase) {
+        setError('Database configuration missing.')
+        setLoading(false)
+        return
+      }
 
-    const { error: supabaseError } = await supabase
-      .from('products')
-      .insert([productData])
+      const { error: supabaseError } = await supabase
+        .from('products')
+        .insert([productData])
 
-    if (supabaseError) {
-      setError(supabaseError.message)
+      if (supabaseError) {
+        console.error('Insert error:', supabaseError)
+        setError('Could not create product. Please try again.')
+        setLoading(false)
+      } else {
+        router.push('/admin/products')
+      }
+    } catch (e) {
+      console.error('Unexpected error:', e)
+      setError('Something went wrong. Please try again.')
       setLoading(false)
-    } else {
-      router.push('/admin/products')
-      router.refresh()
     }
   }
 
@@ -123,7 +129,7 @@ export default function NewProductPage() {
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-600 p-4 flex gap-3 items-center">
-            <Info className="text-red-600 w-4 h-4" />
+            <AlertCircle className="text-red-600 w-4 h-4" />
             <p className="text-red-600 font-bold uppercase text-[10px] tracking-widest">{error}</p>
           </div>
         )}

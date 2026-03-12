@@ -3,35 +3,47 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { getSupabase, type Product } from '@/lib/supabase'
-import { Link as LinkIcon, Info, Loader2 } from 'lucide-react'
+import { Link as LinkIcon, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
 
 export default function EditProductPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [product, setProduct] = useState<Product | null>(null)
-  
+
   const router = useRouter()
   const params = useParams()
   const productId = params.id as string
 
   useEffect(() => {
     async function fetchProduct() {
-      const supabase = getSupabase()
-      if (!supabase) return
+      try {
+        const supabase = getSupabase()
+        if (!supabase) {
+          setError('Database configuration missing.')
+          setLoading(false)
+          return
+        }
 
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single()
+        const { data, error: fetchError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single()
 
-      if (error) {
-        setError('Error loading product: ' + error.message)
-      } else {
-        setProduct(data)
+        if (fetchError) {
+          console.error('Fetch error:', fetchError)
+          setError('Could not load product. Please go back and try again.')
+        } else {
+          setProduct(data)
+        }
+      } catch (e) {
+        console.error('Unexpected error:', e)
+        setError('Something went wrong. Please refresh.')
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     if (productId) {
@@ -43,37 +55,48 @@ export default function EditProductPage() {
     e.preventDefault()
     setSaving(true)
     setError('')
+    setSuccess(false)
 
-    const formData = new FormData(e.currentTarget)
-    
-    const productData = {
-      title: formData.get('title'),
-      description: formData.get('description'),
-      video_url: formData.get('video_url'),
-      github_url: formData.get('github_url'),
-      tech_stack: formData.get('tech_stack'),
-      prompts: formData.get('prompts'),
-      architecture: formData.get('architecture'),
-      thumbnail: formData.get('thumbnail'),
-    }
+    try {
+      const formData = new FormData(e.currentTarget)
 
-    const supabase = getSupabase()
-    if (!supabase) {
-      setError('Database configuration missing')
+      const productData = {
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+        video_url: formData.get('video_url') as string,
+        github_url: formData.get('github_url') as string,
+        tech_stack: formData.get('tech_stack') as string,
+        prompts: formData.get('prompts') as string,
+        architecture: formData.get('architecture') as string,
+        thumbnail: formData.get('thumbnail') as string,
+      }
+
+      const supabase = getSupabase()
+      if (!supabase) {
+        setError('Database configuration missing.')
+        setSaving(false)
+        return
+      }
+
+      const { error: updateError } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', productId)
+
+      if (updateError) {
+        console.error('Update error:', updateError)
+        setError('Could not save changes. Please try again.')
+        setSaving(false)
+      } else {
+        setSuccess(true)
+        setTimeout(() => {
+          router.push('/admin/products')
+        }, 800)
+      }
+    } catch (e) {
+      console.error('Unexpected error:', e)
+      setError('Something went wrong. Please try again.')
       setSaving(false)
-      return
-    }
-
-    const { error: supabaseError } = await supabase
-      .from('products')
-      .update(productData)
-      .eq('id', productId)
-
-    if (supabaseError) {
-      setError(supabaseError.message)
-      setSaving(false)
-    } else {
-      router.push('/admin/products')
     }
   }
 
@@ -89,7 +112,8 @@ export default function EditProductPage() {
   if (!product) {
     return (
       <div className="text-center py-24">
-        <h2 className="text-4xl font-black uppercase mb-8">PRODUCT NOT FOUND</h2>
+        <h2 className="text-4xl font-black uppercase mb-4">PRODUCT NOT FOUND</h2>
+        {error && <p className="text-red-600 text-sm mb-8">{error}</p>}
         <button onClick={() => router.back()} className="btn-primary">GO BACK</button>
       </div>
     )
@@ -106,34 +130,35 @@ export default function EditProductPage() {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <label className="label">PRODUCT NAME</label>
-            <input 
-              name="title" 
+            <input
+              name="title"
               defaultValue={product.title}
-              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-bold" 
-              placeholder="e.g. TAPQR" 
-              required 
+              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-bold"
+              placeholder="e.g. TAPQR"
+              required
             />
           </div>
-          
+
           <div className="flex flex-col gap-2">
             <label className="label">DESCRIPTION</label>
-            <textarea 
-              name="description" 
+            <textarea
+              name="description"
               defaultValue={product.description}
-              rows={3} 
-              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue leading-relaxed" 
-              placeholder="Short description..." 
-              required 
+              rows={3}
+              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue leading-relaxed"
+              placeholder="Short description..."
+              required
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="label">THUMBNAIL URL</label>
             <div className="relative">
-              <input 
-                name="thumbnail" 
+              <input
+                name="thumbnail"
                 defaultValue={product.thumbnail}
-                className="w-full p-4 pl-12 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm" 
+                className="w-full p-4 pl-12 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm"
+                placeholder="https://..."
               />
               <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-mutedlabel w-4 h-4" />
             </div>
@@ -141,21 +166,22 @@ export default function EditProductPage() {
 
           <div className="flex flex-col gap-2">
             <label className="label">VIDEO DEMO URL</label>
-            <input 
-              name="video_url" 
+            <input
+              name="video_url"
               defaultValue={product.video_url}
-              className="w-full p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm" 
-              placeholder="YouTube or Drive link..." 
+              className="w-full p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm"
+              placeholder="YouTube or Drive link..."
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="label">GITHUB URL</label>
             <div className="relative">
-              <input 
-                name="github_url" 
+              <input
+                name="github_url"
                 defaultValue={product.github_url}
-                className="w-full p-4 pl-12 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm" 
+                className="w-full p-4 pl-12 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm"
+                placeholder="https://github.com/..."
               />
               <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-mutedlabel w-4 h-4" />
             </div>
@@ -163,45 +189,55 @@ export default function EditProductPage() {
 
           <div className="flex flex-col gap-2">
             <label className="label">TECH STACK</label>
-            <input 
-              name="tech_stack" 
+            <input
+              name="tech_stack"
               defaultValue={product.tech_stack}
-              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue" 
+              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue"
+              placeholder="e.g. Next.js, TypeScript, Supabase"
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="label">PROMPTS USED</label>
-            <textarea 
-              name="prompts" 
+            <textarea
+              name="prompts"
               defaultValue={product.prompts}
-              rows={5} 
-              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm" 
+              rows={5}
+              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue font-mono text-sm"
+              placeholder="Paste the core prompts used..."
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="label">ARCHITECTURE NOTES</label>
-            <textarea 
-              name="architecture" 
+            <textarea
+              name="architecture"
               defaultValue={product.architecture}
-              rows={5} 
-              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue" 
+              rows={5}
+              className="p-4 border border-divider bg-[#F5F5F4] focus:outline-none focus:border-blue"
+              placeholder="Describe the system architecture..."
             />
           </div>
         </div>
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-600 p-4 flex gap-3 items-center">
-            <Info className="text-red-600 w-4 h-4" />
+            <AlertCircle className="text-red-600 w-4 h-4 flex-shrink-0" />
             <p className="text-red-600 font-bold uppercase text-[10px] tracking-widest">{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border-l-4 border-green-600 p-4 flex gap-3 items-center">
+            <CheckCircle className="text-green-600 w-4 h-4 flex-shrink-0" />
+            <p className="text-green-700 font-bold uppercase text-[10px] tracking-widest">Changes saved! Redirecting...</p>
           </div>
         )}
 
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-4">
           <button type="button" onClick={() => router.back()} className="font-bold uppercase tracking-widest text-mutedlabel hover:text-jet p-4">CANCEL</button>
-          <button type="submit" disabled={saving} className="btn-primary min-w-[200px]">
-            {saving ? 'SAVING...' : 'UPDATE PRODUCT'}
+          <button type="submit" disabled={saving || success} className="btn-primary min-w-[200px]">
+            {saving ? 'SAVING...' : success ? 'SAVED!' : 'UPDATE PRODUCT'}
           </button>
         </div>
       </form>

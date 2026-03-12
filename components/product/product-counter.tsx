@@ -1,25 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getSupabase } from '@/lib/supabase'
 
 export default function ProductCounter() {
   const [count, setCount] = useState<number | null>(null)
 
-  useEffect(() => {
-    async function fetchCount() {
+  const fetchCount = useCallback(async () => {
+    try {
       const supabase = getSupabase()
       if (!supabase) return
 
       const { count: supabaseCount, error } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
-      
+
       if (!error && supabaseCount !== null) {
         setCount(supabaseCount)
       }
+    } catch (e) {
+      console.error('Error fetching product count:', e)
     }
-    
+  }, [])
+
+  useEffect(() => {
     fetchCount()
 
     const supabase = getSupabase()
@@ -30,22 +34,19 @@ export default function ProductCounter() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
-        (payload) => {
-          console.log('Counter realtime update received:', payload)
+        () => {
           fetchCount()
         }
       )
-      .subscribe((status) => {
-        console.log('Counter subscription status:', status)
-      })
+      .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [fetchCount])
 
   const targetCount = 30
-  const currentCount = count || 0
+  const currentCount = count ?? 0
   const progress = Math.min((currentCount / targetCount) * 100, 100)
 
   return (
@@ -57,15 +58,15 @@ export default function ProductCounter() {
           </h2>
           <span className="label pb-1 md:pb-2">PRODUCTS BUILT</span>
         </div>
-        
+
         {/* Progress Bar */}
         <div className="w-full h-4 md:h-6 border-2 border-jet mt-2 relative overflow-hidden">
-          <div 
+          <div
             className="h-full bg-blue transition-all duration-1000 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
-        
+
         <div className="flex justify-between mt-2">
           <span className="text-[10px] md:text-xs font-mono font-bold uppercase tracking-widest text-deepgray">
             PHASE 01: DISCOVERY
