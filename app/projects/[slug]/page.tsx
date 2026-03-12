@@ -7,9 +7,10 @@ import ProjectLayout, { ProjectSection } from '@/components/product/project-layo
 export const dynamic = 'force-dynamic'
 
 function getEmbedUrl(url: string) {
-  if (!url) return null
+  if (!url || url.trim().length === 0) return null
 
   // YouTube
+  // Matches: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, etc.
   const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`
 
@@ -46,15 +47,15 @@ export default async function ProjectItemPage({ params }: { params: { slug: stri
 
   const VideoSlot = (
     <div className="w-full h-full bg-white flex flex-col items-center justify-center text-[#7A7A7A]">
-      {embedUrl ? (
+      {project.video_url && project.video_url.trim().length > 0 ? (
         <iframe 
-          src={embedUrl}
-          className="w-full h-full border-0"
+          src={embedUrl || project.video_url}
+          className="w-full aspect-video border border-[#C7C7C7]"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
       ) : (
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 w-full h-full px-8">
           <div className="aspect-video w-full flex items-center justify-center border border-[#C7C7C7] text-sm text-[#7A7A7A]">
             Demo coming soon
           </div>
