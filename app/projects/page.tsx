@@ -21,7 +21,10 @@ export default function ProjectsPage() {
         .order('created_at', { ascending: false })
       
       if (!error && data) {
+        console.log('ProjectsPage fetch success:', data.length, 'products')
         setProjects(data)
+      } else {
+        console.error('ProjectsPage fetch error:', error)
       }
     } catch (e) {
       console.error('Error fetching projects:', e)

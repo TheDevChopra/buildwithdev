@@ -2,6 +2,8 @@ import { getSupabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, Edit2, Trash2 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminProductsPage() {
   const supabase = getSupabase()
   if (!supabase) return <div>Database configuration missing.</div>
@@ -10,6 +12,8 @@ export default async function AdminProductsPage() {
     .from('products')
     .select('*')
     .order('created_at', { ascending: false })
+
+  console.log('AdminProductsPage fetch:', { count: products?.length, error })
 
   if (error) console.error('Error fetching products:', error)
 

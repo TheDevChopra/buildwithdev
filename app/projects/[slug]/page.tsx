@@ -1,6 +1,6 @@
 import { getSupabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
-import { Github, Play } from 'lucide-react'
+import { Github } from 'lucide-react'
 import Link from 'next/link'
 import ProjectLayout, { ProjectSection } from '@/components/product/project-layout'
 
