@@ -12,7 +12,11 @@ export default function ProjectsPage() {
   
   const fetchProjects = useCallback(async () => {
     const supabase = getSupabase()
-    if (!supabase) return
+    if (!supabase) {
+      console.error('Supabase client failed to initialize')
+      setLoading(false)
+      return
+    }
 
     try {
       const { data, error } = await supabase
@@ -111,6 +115,13 @@ export default function ProjectsPage() {
                 </div>
               </Link>
             ))}
+            
+            {loading && (
+              <div className="col-span-full py-24 text-center">
+                <div className="inline-block w-8 h-8 border-4 border-blue border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="label">SCANNING BUILD LAB...</p>
+              </div>
+            )}
             
             {!loading && projects.length === 0 && (
               <div className="col-span-full py-24 md:py-32 text-center border border-dashed border-divider bg-white/50">
