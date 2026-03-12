@@ -48,11 +48,14 @@ export default function ProjectsPage() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
-        () => {
+        (payload) => {
+          console.log('Realtime update received:', payload)
           fetchProjects()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
+      })
 
     return () => {
       supabase.removeChannel(channel)

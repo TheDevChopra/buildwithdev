@@ -30,11 +30,14 @@ export default function ProductCounter() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
-        () => {
+        (payload) => {
+          console.log('Counter realtime update received:', payload)
           fetchCount()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Counter subscription status:', status)
+      })
 
     return () => {
       supabase.removeChannel(channel)
