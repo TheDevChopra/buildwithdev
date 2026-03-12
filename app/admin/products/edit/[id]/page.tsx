@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabase, type Product } from '@/lib/supabase'
 import { Link as LinkIcon, Info, Loader2 } from 'lucide-react'
 
 export default function EditProductPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [product, setProduct] = useState<any>(null)
+  const [product, setProduct] = useState<Product | null>(null)
   
   const router = useRouter()
   const params = useParams()
@@ -86,7 +86,7 @@ export default function EditProductPage() {
     )
   }
 
-  if (!product && !loading) {
+  if (!product) {
     return (
       <div className="text-center py-24">
         <h2 className="text-4xl font-black uppercase mb-8">PRODUCT NOT FOUND</h2>
